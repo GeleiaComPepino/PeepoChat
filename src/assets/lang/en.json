@@ -1,0 +1,75 @@
+{
+	"title": "PeepoChat",
+	"sidebar": {
+		"toggle_button": "Toggle Sidebar",
+		"channel": {
+			"dropdown": {
+				"pin": "Pin Channel",
+				"unpin": "Unpin Channel",
+				"delete": "Remove Channel"
+			}
+		},
+		"add_channel_button": "Add Channel",
+		"account": {
+			"button": "Account Settings",
+			"dropdown": {
+				"settings": "Settings",
+				"sign_in": "Sign In",
+				"sign_out": "Sing Out"
+			}
+		},
+		"mentions_button": "Mentions",
+		"theme_toggle_button": "Toggle Theme"
+	},
+	"generic": {
+		"icon_button": "Button",
+		"link_button": "Link Button",
+		"toggle_button": "Toggle Button",
+		"input": {
+			"placeholder": "Search",
+			"placeholder_searching": "Searching..."
+		}
+	},
+	"view": {
+		"index": {
+			"no_channel_selected": {
+				"header": "No Channel Selected",
+				"description": "Select or add a channel using the Sidebar."
+			}
+		},
+		"channel": {
+			"no_channel_found": {
+				"header": "No Channel Found",
+				"description": "Could not find a channel with the name {name}."
+			},
+			"channel_disconnected": {
+				"header": "Disconnected",
+				"description": "Lost connection to the chat room."
+			}
+		},
+		"mentions": {
+			"title": "Mentions",
+			"no_mentions": {
+				"header": "No Mentions",
+				"description": "No one has mentioned you yet."
+			}
+		}
+	},
+	"chat": {
+		"overlay": {
+			"scroll_to_bottom_button": "Scroll To Bottom"
+		}
+	},
+	"modal": {
+		"add_channel": {
+			"header": "Add Channel",
+			"input": {
+				"placeholder": "Channel Name..."
+			},
+			"button": {
+				"find": "Find Channel",
+				"add": "Add Channel"
+			}
+		}
+	}
+}

@@ -1,0 +1,21 @@
+{
+    "cSpell.words": [
+        "danmizu",
+        "heroicons",
+        "iconify",
+        "Mizu",
+        "Nuxt",
+        "nuxtjs",
+        "peepochat",
+        "persistedstate",
+        "pinia",
+        "Roboto",
+        "tabler",
+        "tailwindcss",
+        "twurple",
+        "Userstate"
+    ],
+    "i18n-ally.localesPaths": [
+        "src/assets/lang"
+    ]
+}

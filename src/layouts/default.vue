@@ -1,0 +1,134 @@
+<script setup lang="ts">
+// get state
+import useStore from '~/stores';
+const store = useStore();
+
+// localization
+const localize = useI18n().t;
+
+// get constants
+const sidebarSlideDuration = ref(useAppConfig().sidebarSlideDuration);
+
+// is sidebar toggle button disabled?
+const isSidebarToggleButtonDisabled = ref(false);
+
+// toggle sidebar
+const toggleSidebar = () => {
+	// ignore if button is disabled
+	if (isSidebarToggleButtonDisabled.value === true) return;
+
+	// disable button
+	isSidebarToggleButtonDisabled.value = true;
+
+	// toggle sidebar
+	store.settings.isSidebarExpanded = !store.settings.isSidebarExpanded;
+
+	// re-enable button after slide animation/transition completes
+	setTimeout(
+		() => (isSidebarToggleButtonDisabled.value = false),
+		Number(sidebarSlideDuration.value)
+	);
+};
+
+// generate sidebar toggle button style
+const sidebarToggleButtonStyle = computed(() => {
+	return {
+		icon: {
+			// rotate icon when sidebar is hidden
+			base: store.settings.isSidebarExpanded
+				? `transition-transform duration-${sidebarSlideDuration.value}`
+				: `transform rotate-180 transition-transform duration-${sidebarSlideDuration.value}`,
+		},
+	};
+});
+</script>
+
+<template>
+	<!-- prevent page from expanding past size of screen -->
+	<div class="static h-full flex flex-row overflow-hidden">
+		<!-- Sidebar -->
+		<Sidebar>
+			<!-- Channels -->
+			<template #channels>
+				<ul>
+					<!-- Channel Buttons -->
+					<!-- <li
+						v-for="(channel, _index) in store.user.channels"
+						class="flex justify-center mb-3"
+					>
+						<ChannelButton :providedChannel="channel" />
+					</li> -->
+
+					<!-- Add Channel Button -->
+					<li class="flex justify-center">
+						<Button
+							:label="localize('sidebar.add_channel_button')"
+							icon="i-tabler-plus"
+							:ui="{
+								rounded: 'rounded-full',
+								square: {
+									lg: 'p-2.5',
+								},
+								icon: {
+									base: 'flex-shrink-0',
+									size: {
+										lg: 'h-5 w-5',
+									},
+								},
+							}"
+							size="lg"
+							to="/"
+						/>
+					</li>
+				</ul>
+			</template>
+
+			<!-- Personal Options -->
+			<template #personal>
+				<!-- Theme Toggle Button -->
+				<div class="mb-6 text-center">
+					<ThemeToggleButton />
+				</div>
+
+				<!-- Mentions Page Button -->
+				<div class="mb-6 text-center">
+					<Button
+						:label="localize('sidebar.mentions_button')"
+						icon="i-fluent-comment-mention-16-filled"
+						variant="inverse"
+						size="xl"
+						to="/mentions"
+					/>
+				</div>
+
+				<!-- Separator -->
+				<!-- <span class="w-full flex full-center my-6">
+					<hr class="w-[70%]" />
+				</span> -->
+
+				<!-- Account Button -->
+				<AccountButton />
+			</template>
+
+			<!-- Attached Buttons -->
+			<template #attached>
+				<div class="h-full flex flex-col justify-end pb-5 px-3">
+					<!-- Sidebar Toggle Button -->
+					<Button
+						:label="localize('sidebar.toggle_button')"
+						icon="i-radix-icons-double-arrow-left"
+						@click="toggleSidebar"
+						:ui="sidebarToggleButtonStyle"
+					/>
+				</div>
+			</template>
+		</Sidebar>
+
+		<!-- Current View (Page) -->
+		<KeepAlive>
+			<div class="static h-full w-fit grow scrollbar-hidden">
+				<slot />
+			</div>
+		</KeepAlive>
+	</div>
+</template>

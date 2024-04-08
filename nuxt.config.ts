@@ -2,6 +2,16 @@ import { name, version, author } from './package.json';
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+	schemaOrg: {
+		identity: {
+			type: 'WebApplication',
+			name: 'PeepoChat',
+			url: 'https://peepochat.com',
+		},
+	},
+
+	site: { url: 'https://peepochat.com', name: 'PeepoChat', indexable: false },
+
 	app: {
 		head: {
 			meta: [
@@ -40,16 +50,10 @@ export default defineNuxtConfig({
 		},
 	],
 
-	site: { url: 'https://peepochat.com', name: 'PeepoChat', indexable: false },
-
-	sitemap: { autoI18n: false },
-
-	schemaOrg: {
-		identity: {
-			type: 'WebApplication',
-			name: 'PeepoChat',
-			url: 'https://peepochat.com',
-		},
+	sitemap: {
+		autoI18n: false,
+		credits: false,
+		xslTips: false,
 	},
 
 	ui: {
@@ -58,6 +62,15 @@ export default defineNuxtConfig({
 	},
 
 	i18n: {
+		locales: [
+			{
+				code: 'en',
+				iso: 'en-US',
+				isCatchallLocale: true,
+			},
+		],
+		defaultLocale: 'en',
+		strategy: 'prefix_except_default',
 		vueI18n: './src/assets/lang.ts',
 	},
 

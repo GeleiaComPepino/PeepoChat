@@ -35,8 +35,7 @@ export default defineAppConfig({
 			variant: {
 				inverse:
 					'text-white dark:text-black ring-0 bg-gray-900 hover:bg-gray-800 dark:bg-gray-100 dark:hover:bg-gray-50',
-				hidden:
-					'hidden',
+				hidden: 'hidden',
 			},
 			square: {
 				lg: 'p-2',
@@ -55,4 +54,5 @@ export default defineAppConfig({
 
 	// settings
 	sidebarSlideDuration: '500',
+	maxChatMessages: 400,
 });

@@ -26,6 +26,8 @@ export default defineNuxtConfig({
 	},
 
 	runtimeConfig: {
+		twitchAppClientId: '',
+		twitchAppClientSecret: '',
 		public: {
 			version,
 			userAgent: `${name}/${version} (${author.email})`,
@@ -39,6 +41,7 @@ export default defineNuxtConfig({
 		'@pinia-plugin-persistedstate/nuxt',
 		'@nuxtjs/i18n',
 		'@nuxtjs/seo',
+		'@nuxt/image',
 	],
 
 	srcDir: 'src',
@@ -76,4 +79,5 @@ export default defineNuxtConfig({
 	},
 
 	devtools: { enabled: true },
+	compatibilityDate: '2024-07-03',
 });

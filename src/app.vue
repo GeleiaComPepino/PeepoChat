@@ -21,6 +21,7 @@ const preventContextMenu = (event: MouseEvent) => event.preventDefault();
 
 <template>
 	<div class="h-screen">
+		<NuxtLoadingIndicator />
 		<NuxtLayout>
 			<NuxtPage />
 		</NuxtLayout>
@@ -75,9 +76,12 @@ const preventContextMenu = (event: MouseEvent) => event.preventDefault();
 
 /* layer priorities */
 .overlay-layer {
-	@apply z-30;
+	@apply z-40;
 }
 .sidebar-layer {
+	@apply z-30;
+}
+.content-layer {
 	@apply z-20;
 }
 .header-layer {

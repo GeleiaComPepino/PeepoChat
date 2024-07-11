@@ -24,6 +24,9 @@ export default {
 				'kick-background': '#53FC18',
 				'kick-icon': '#000000',
 
+				// other
+				live: '#FF0000',
+
 				// primary
 				shark: {
 					'50': '#f6f6f6',

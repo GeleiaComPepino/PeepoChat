@@ -4,14 +4,15 @@
 		"toggle_button": "Toggle Sidebar",
 		"channel": {
 			"dropdown": {
+				"visit_stream": "View Stream",
 				"pin": "Pin Channel",
 				"unpin": "Unpin Channel",
-				"delete": "Remove Channel"
+				"remove": "Remove Channel"
 			}
 		},
 		"add_channel_button": "Add Channel",
 		"account": {
-			"button": "Account Settings",
+			"button": "Not Logged In",
 			"dropdown": {
 				"settings": "Settings",
 				"sign_in": "Sign In",
@@ -71,5 +72,8 @@
 				"add": "Add Channel"
 			}
 		}
+	},
+	"indicator": {
+		"live": "LIVE"
 	}
 }

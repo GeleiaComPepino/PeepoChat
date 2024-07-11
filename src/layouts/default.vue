@@ -47,17 +47,24 @@ const sidebarToggleButtonStyle = computed(() => {
 	<!-- prevent page from expanding past size of screen -->
 	<div class="static h-full flex flex-row overflow-hidden">
 		<!-- Sidebar -->
-		<Sidebar>
+		<Sidebar :open="store.settings.isSidebarExpanded">
 			<!-- Channels -->
 			<template #channels>
 				<ul>
 					<!-- Channel Buttons -->
-					<!-- <li
-						v-for="(channel, _index) in store.user.channels"
-						class="flex justify-center mb-3"
-					>
-						<ChannelButton :providedChannel="channel" />
-					</li> -->
+					<li class="flex justify-center mb-3">
+						<ChannelButton
+							:channel="{
+								name: 'pokelawls',
+								avatarURL:
+									'https://cdn.7tv.app/pp/611ea25d3990c04e921506f7/743b9aca64cc46b49b16bb2c0a1c5f44',
+								live: false,
+								platform: {
+									twitch: 'pokelawls',
+								},
+							}"
+						/>
+					</li>
 
 					<!-- Add Channel Button -->
 					<li class="flex justify-center">
@@ -125,10 +132,8 @@ const sidebarToggleButtonStyle = computed(() => {
 		</Sidebar>
 
 		<!-- Current View (Page) -->
-		<KeepAlive>
-			<div class="static h-full w-fit grow scrollbar-hidden">
-				<slot />
-			</div>
-		</KeepAlive>
+		<div class="static h-full w-fit grow scrollbar-hidden">
+			<slot />
+		</div>
 	</div>
 </template>

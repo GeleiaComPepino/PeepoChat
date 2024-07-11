@@ -31,14 +31,14 @@ const dropdownContentAuth = [
 const dropdownContentAnon = [
 	[
 		{
-			label: localize('sidebar.account.dropdown.settings'),
-			icon: 'i-heroicons-cog-8-tooth',
+			label: localize('sidebar.account.dropdown.sign_in'),
+			icon: 'i-heroicons-arrow-left-on-rectangle',
 		},
 	],
 	[
 		{
-			label: localize('sidebar.account.dropdown.sign_in'),
-			icon: 'i-heroicons-arrow-left-on-rectangle',
+			label: localize('sidebar.account.dropdown.settings'),
+			icon: 'i-heroicons-cog-8-tooth',
 		},
 	],
 ];
@@ -62,7 +62,7 @@ const dropdownContentAnon = [
 		:popper="{ placement: 'right' }"
 		show
 	>
-		<!-- Account Settings Button Trigger -->
+		<!-- Button Trigger -->
 		<Button :label="localize('sidebar.account.button')" variant="hidden">
 			<template #content>
 				<!-- Avatar Icon -->

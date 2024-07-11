@@ -13,14 +13,14 @@ const sidebarSlideDuration = ref(useAppConfig().sidebarSlideDuration);
 		<!-- Sidebar Container -->
 		<aside
 			:class="[
-				'w-10 h-full py-7 flex flex-col items-center bg-secondary-color sidebar-slide-transition sidebar-layer shadow-md',
+				'w-10 h-full py-4 flex flex-col items-center bg-secondary-color sidebar-slide-transition sidebar-layer shadow-md',
 				// slide to left (off screen) when not expanded
 				!store.settings.isSidebarExpanded ? 'sidebar-offset' : '',
 			]"
 		>
 			<!-- Saved Channels -->
 			<div
-				class="grow w-full pt-3 flex overflow-y-scroll scrollbar-hidden justify-center"
+				class="grow w-full flex overflow-y-scroll scrollbar-hidden justify-center"
 			>
 				<slot name="channels" />
 			</div>

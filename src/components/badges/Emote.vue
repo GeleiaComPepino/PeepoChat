@@ -1,9 +1,8 @@
 <script setup lang="ts">
 // properties
 const props = defineProps<{
-	title: string;
-	url: string;
-	previewUrl: string;
+	id: string;
+	name: string;
 }>();
 </script>
 
@@ -18,16 +17,22 @@ const props = defineProps<{
 			base: 'h-fit',
 		}"
 	>
-		<!-- Badge -->
-		<NuxtImg :src="props.url" class="inline pr-2" />
+		<!-- Emote -->
+		<NuxtImg
+			:src="`https://static-cdn.jtvnw.net/emoticons/v2/${props.id}/default/dark/1.0`"
+			class="inline max-h-8"
+			:alt="props.name"
+		/>
 
-		<!-- Custom Tooltip Content -->
+		<!-- Description Tooltip -->
 		<template #text>
 			<div
 				class="flex flex-col items-center justify-center text-center gap-y-2 p-2"
 			>
-				<NuxtImg :src="props.previewUrl" />
-				<span class="text-balance text-xs">{{ title }}</span>
+				<NuxtImg
+					:src="`https://static-cdn.jtvnw.net/emoticons/v2/${props.id}/default/dark/4.0`"
+				/>
+				<span class="text-balance text-xs">{{ props.name }}</span>
 			</div>
 		</template>
 	</UTooltip>

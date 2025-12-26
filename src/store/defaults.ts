@@ -3,4 +3,7 @@ export default {
 	defaultSettings: {
 		isSidebarExpanded: true,
 	} as ISettings,
+
+	// default channels
+	defaultChannels: [] as IChannel[],
 };

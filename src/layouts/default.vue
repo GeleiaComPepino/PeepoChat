@@ -41,6 +41,22 @@ const sidebarToggleButtonStyle = computed(() => {
 		},
 	};
 });
+
+// state do modal
+const isAddChannelModalOpen = ref(false);
+
+// método para adicionar canal
+const handleChannelAdded = (channel: IChannel) => {
+	// Verificar se o canal já existe
+	const channelExists = store.channels.some(
+		(c) => c.name.toLowerCase() === channel.name.toLowerCase()
+	);
+
+	if (!channelExists) {
+		// Adicionar ao store
+		store.channels.push(channel);
+	}
+};
 </script>
 
 <template>
@@ -52,18 +68,12 @@ const sidebarToggleButtonStyle = computed(() => {
 			<template #channels>
 				<ul>
 					<!-- Channel Buttons -->
-					<li class="flex justify-center mb-3">
-						<ChannelButton
-							:channel="{
-								name: 'felps',
-								avatarURL:
-									'https://static-cdn.jtvnw.net/jtv_user_pictures/2626d071-0773-47f3-867e-a027412bdb2a-profile_image-70x70.png',
-								live: false,
-								platform: {
-									twitch: 'felps',
-								},
-							}"
-						/>
+					<li
+						v-for="channel in store.channels"
+						:key="channel.name"
+						class="flex justify-center mb-3"
+					>
+						<ChannelButton :channel="channel" />
 					</li>
 
 					<!-- Add Channel Button -->
@@ -84,7 +94,7 @@ const sidebarToggleButtonStyle = computed(() => {
 								},
 							}"
 							size="lg"
-							to="/"
+							@click="isAddChannelModalOpen = true"
 						/>
 					</li>
 				</ul>
@@ -135,5 +145,11 @@ const sidebarToggleButtonStyle = computed(() => {
 		<div class="static h-full w-fit grow scrollbar-hidden">
 			<slot />
 		</div>
+
+		<!-- Add Channel Modal -->
+		<AddChannelModal
+			v-model:open="isAddChannelModalOpen"
+			@channel-added="handleChannelAdded"
+		/>
 	</div>
 </template>

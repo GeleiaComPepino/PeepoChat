@@ -1,4 +1,8 @@
 <script setup lang="ts">
+// get state
+import useStore from '~/store';
+const store = useStore();
+
 // localization
 const localize = useI18n().t;
 
@@ -13,6 +17,25 @@ const props = defineProps<{
 		};
 	};
 }>();
+
+// methods
+const handleRemove = () => {
+	const index = store.channels.findIndex(
+		(c) => c.name.toLowerCase() === props.channel.name.toLowerCase()
+	);
+	if (index !== -1) {
+		store.channels.splice(index, 1);
+	}
+};
+
+const handleChannelClick = () => {
+	const route = useRoute();
+	const newPath = '/channel/twitch/' + props.channel.platform.twitch;
+	// Force full page reload if navigating to different channel
+	if (route.path !== newPath) {
+		window.location.href = newPath;
+	}
+};
 
 // dropdown contents
 const dropdownContentAnon = [
@@ -35,6 +58,7 @@ const dropdownContentAnon = [
 		{
 			label: localize('sidebar.channel.dropdown.remove'),
 			icon: 'i-ic-baseline-remove-circle',
+			click: handleRemove,
 		},
 	],
 ];
@@ -66,7 +90,7 @@ const dropdownOpen = ref(false);
 		<Button
 			:label="props.channel.name"
 			variant="hidden"
-			:to="'/channel/twitch/' + props.channel.platform.twitch"
+			@click="handleChannelClick"
 			@click.right="
 				() => {
 					dropdownOpen = true;

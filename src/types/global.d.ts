@@ -57,4 +57,14 @@ declare global {
 		userName: string;
 		viewers: number;
 	}
+
+	// Channel
+	interface IChannel {
+		name: string;
+		avatarURL: string;
+		live: boolean;
+		platform: {
+			twitch?: string;
+		};
+	}
 }

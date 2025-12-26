@@ -57,7 +57,7 @@ const sidebarToggleButtonStyle = computed(() => {
 							:channel="{
 								name: 'felps',
 								avatarURL:
-									'https://yt3.googleusercontent.com/zPTE40jgUqbC-8e8BwuivrUMZMcQPiMKSkVoerB0GifBqY6RBJ5rK7rjOY-wsHYNLRzj3wd67gI=s900-c-k-c0x00ffffff-no-rj',
+									'https://static-cdn.jtvnw.net/jtv_user_pictures/2626d071-0773-47f3-867e-a027412bdb2a-profile_image-70x70.png',
 								live: false,
 								platform: {
 									twitch: 'felps',

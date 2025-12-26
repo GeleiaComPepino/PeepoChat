@@ -41,6 +41,7 @@ const findChannel = async () => {
 			name: response.data.name,
 			avatarURL: response.data.profilePictureUrl,
 			live: false, // pode buscar stream depois
+			pinned: false,
 			platform: {
 				twitch: response.data.name,
 			},

@@ -8,14 +8,7 @@ const localize = useI18n().t;
 
 // properties
 const props = defineProps<{
-	channel: {
-		name: string;
-		avatarURL: string;
-		live: boolean;
-		platform: {
-			twitch?: string;
-		};
-	};
+	channel: IChannel;
 }>();
 
 // methods
@@ -28,6 +21,15 @@ const handleRemove = () => {
 	}
 };
 
+const handlePin = () => {
+	const channel = store.channels.find(
+		(c) => c.name.toLowerCase() === props.channel.name.toLowerCase()
+	);
+	if (channel) {
+		channel.pinned = !channel.pinned;
+	}
+};
+
 const handleChannelClick = () => {
 	const route = useRoute();
 	const newPath = '/channel/twitch/' + props.channel.platform.twitch;
@@ -37,8 +39,15 @@ const handleChannelClick = () => {
 	}
 };
 
+// computed for pin label
+const pinLabel = computed(() => {
+	return props.channel.pinned
+		? localize('sidebar.channel.dropdown.unpin')
+		: localize('sidebar.channel.dropdown.pin');
+});
+
 // dropdown contents
-const dropdownContentAnon = [
+const dropdownContentAnon = computed(() => [
 	[
 		{
 			label: localize('sidebar.channel.dropdown.visit_stream'),
@@ -50,8 +59,9 @@ const dropdownContentAnon = [
 	],
 	[
 		{
-			label: localize('sidebar.channel.dropdown.pin'),
+			label: pinLabel.value,
 			icon: 'i-ic-round-push-pin',
+			click: handlePin,
 		},
 	],
 	[
@@ -61,7 +71,7 @@ const dropdownContentAnon = [
 			click: handleRemove,
 		},
 	],
-];
+]);
 
 // state
 const dropdownOpen = ref(false);

@@ -63,6 +63,7 @@ declare global {
 		name: string;
 		avatarURL: string;
 		live: boolean;
+		pinned: boolean;
 		platform: {
 			twitch?: string;
 		};

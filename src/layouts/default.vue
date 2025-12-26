@@ -57,6 +57,26 @@ const handleChannelAdded = (channel: IChannel) => {
 		store.channels.push(channel);
 	}
 };
+
+// migrar canais antigos que não têm propriedade pinned
+onMounted(() => {
+	store.channels.forEach((channel) => {
+		if (typeof channel.pinned === 'undefined') {
+			channel.pinned = false;
+		}
+	});
+});
+
+// ordenar canais: pinned primeiro, depois os demais
+const sortedChannels = computed(() => {
+	return [...store.channels].sort((a, b) => {
+		// Pinned channels first
+		if (a.pinned && !b.pinned) return -1;
+		if (!a.pinned && b.pinned) return 1;
+		// Keep original order for same pinned status
+		return 0;
+	});
+});
 </script>
 
 <template>
@@ -69,7 +89,7 @@ const handleChannelAdded = (channel: IChannel) => {
 				<ul>
 					<!-- Channel Buttons -->
 					<li
-						v-for="channel in store.channels"
+						v-for="channel in sortedChannels"
 						:key="channel.name"
 						class="flex justify-center mb-3"
 					>

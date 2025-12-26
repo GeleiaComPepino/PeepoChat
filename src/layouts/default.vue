@@ -55,12 +55,12 @@ const sidebarToggleButtonStyle = computed(() => {
 					<li class="flex justify-center mb-3">
 						<ChannelButton
 							:channel="{
-								name: 'pokelawls',
+								name: 'felps',
 								avatarURL:
-									'https://cdn.7tv.app/pp/611ea25d3990c04e921506f7/743b9aca64cc46b49b16bb2c0a1c5f44',
+									'https://yt3.googleusercontent.com/zPTE40jgUqbC-8e8BwuivrUMZMcQPiMKSkVoerB0GifBqY6RBJ5rK7rjOY-wsHYNLRzj3wd67gI=s900-c-k-c0x00ffffff-no-rj',
 								live: false,
 								platform: {
-									twitch: 'pokelawls',
+									twitch: 'felps',
 								},
 							}"
 						/>

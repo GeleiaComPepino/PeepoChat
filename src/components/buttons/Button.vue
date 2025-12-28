@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { ButtonVariant, ButtonSize } from '#ui/types/button';
+
 const props = withDefaults(
 	defineProps<{
 		to?: string;
@@ -7,8 +9,8 @@ const props = withDefaults(
 		text?: string;
 		class?: string;
 		ui?: any;
-		variant?: string;
-		size?: string;
+		variant?: ButtonVariant;
+		size?: ButtonSize;
 	}>(),
 	{
 		variant: 'ghost',

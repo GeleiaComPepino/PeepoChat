@@ -30,9 +30,12 @@ const findChannel = async () => {
 		});
 
 		if (!response.data) {
-			error.value = localize('view.channel.no_channel_found.description', {
-				name: channelName.value,
-			});
+			error.value = localize(
+				'view.channel.no_channel_found.description',
+				{
+					name: channelName.value,
+				}
+			);
 			return;
 		}
 
@@ -40,7 +43,7 @@ const findChannel = async () => {
 		emit('channel-added', {
 			name: response.data.name,
 			avatarURL: response.data.profilePictureUrl,
-			live: false, // pode buscar stream depois
+			live: false, // search for stream later
 			pinned: false,
 			platform: {
 				twitch: response.data.name,
@@ -51,7 +54,7 @@ const findChannel = async () => {
 		channelName.value = '';
 		emit('update:open', false);
 	} catch (err) {
-		error.value = 'Erro ao buscar canal';
+		error.value = 'Error fetching channel';
 	} finally {
 		isLoading.value = false;
 	}
@@ -88,7 +91,9 @@ const close = () => {
 			<div class="flex flex-col gap-4">
 				<UInput
 					v-model="channelName"
-					:placeholder="localize('modal.add_channel.input.placeholder')"
+					:placeholder="
+						localize('modal.add_channel.input.placeholder')
+					"
 					@keyup.enter="findChannel"
 					:disabled="isLoading"
 				/>
@@ -100,8 +105,12 @@ const close = () => {
 
 			<template #footer>
 				<div class="flex justify-end gap-2">
-					<UButton variant="ghost" @click="close" :disabled="isLoading">
-						Cancelar
+					<UButton
+						variant="ghost"
+						@click="close"
+						:disabled="isLoading"
+					>
+						Cancel
 					</UButton>
 					<UButton
 						@click="findChannel"
@@ -115,4 +124,3 @@ const close = () => {
 		</UCard>
 	</UModal>
 </template>
-

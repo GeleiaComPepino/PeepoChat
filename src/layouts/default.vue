@@ -42,23 +42,23 @@ const sidebarToggleButtonStyle = computed(() => {
 	};
 });
 
-// state do modal
+// modal state
 const isAddChannelModalOpen = ref(false);
 
-// método para adicionar canal
+// add channel
 const handleChannelAdded = (channel: IChannel) => {
-	// Verificar se o canal já existe
+	// check if the channel already exists
 	const channelExists = store.channels.some(
 		(c) => c.name.toLowerCase() === channel.name.toLowerCase()
 	);
 
 	if (!channelExists) {
-		// Adicionar ao store
+		// add to store
 		store.channels.push(channel);
 	}
 };
 
-// migrar canais antigos que não têm propriedade pinned
+// migrate old channels that do not have pinned ownership
 onMounted(() => {
 	store.channels.forEach((channel) => {
 		if (typeof channel.pinned === 'undefined') {
@@ -67,12 +67,13 @@ onMounted(() => {
 	});
 });
 
-// ordenar canais: pinned primeiro, depois os demais
+// order channels: pinned first, then the others
 const sortedChannels = computed(() => {
 	return [...store.channels].sort((a, b) => {
 		// Pinned channels first
 		if (a.pinned && !b.pinned) return -1;
 		if (!a.pinned && b.pinned) return 1;
+
 		// Keep original order for same pinned status
 		return 0;
 	});

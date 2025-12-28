@@ -68,4 +68,78 @@ declare global {
 			twitch?: string;
 		};
 	}
+
+	// 7TV Emote Set
+	interface I7TVEmoteSet {
+		id: string;
+		name: string;
+		flags: number;
+		tags: string[];
+		immutable: boolean;
+		privileged: boolean;
+		emotes: I7TVEmote[];
+		emote_count: number;
+		capacity: number;
+		owner?: {
+			id: string;
+			username: string;
+			display_name: string;
+			avatar_url: string;
+		};
+	}
+
+	// 7TV Emote
+	interface I7TVEmote {
+		id: string;
+		name: string;
+		flags: number;
+		timestamp: number;
+		actor_id?: string;
+		data: {
+			id: string;
+			name: string;
+			flags: number;
+			lifecycle: number;
+			listed: boolean;
+			animated: boolean;
+			owner: {
+				id: string;
+				username: string;
+				display_name: string;
+				avatar_url: string;
+				style?: any;
+				roles?: string[];
+			};
+			host: {
+				url: string;
+				files: Array<{
+					name: string;
+					static_name: string;
+					width: number;
+					height: number;
+					frame_count: number;
+					size: number;
+					format: string;
+				}>;
+			};
+		};
+	}
+
+	// 7TV User Response
+	interface I7TVUserResponse {
+		id: string;
+		platform: string;
+		username: string;
+		display_name: string;
+		linked_platforms: Record<string, any>;
+		emote_set: I7TVEmoteSet | null;
+		emote_sets: I7TVEmoteSet[];
+		user?: {
+			id: string;
+			username: string;
+			display_name: string;
+			created_at: string;
+			avatar_url: string;
+		};
+	}
 }

@@ -10,6 +10,7 @@ const props = defineProps<{
 	};
 	index: number;
 	badgeList: IChatBadgeList;
+	emotes7TV?: I7TVEmoteSet | null;
 }>();
 
 // format badges
@@ -38,35 +39,67 @@ if (emotesRaw && emotesRaw !== '')
 			});
 	});
 
+// create 7TV emote map (name -> emote data)
+const emotes7TVMap: Map<string, I7TVEmote> = new Map();
+if (props.emotes7TV?.emotes) {
+	props.emotes7TV.emotes.forEach((emote) => {
+		emotes7TVMap.set(emote.name, emote);
+	});
+}
+
 // parse message
 let message: {
 	[key: string]:
 		| { type: 'text'; content: string }
-		| { type: 'emote'; id: string; name: string };
+		| { type: 'emote'; id: string; name: string; source: 'twitch' | '7tv' };
 } = {};
-if (Object.keys(emotesUsed).length === 0) {
-	// does not contain emotes
-	message = { '0': { type: 'text', content: props.message.content } };
-} else {
-	// split message into individual words with the key of their starting position in the message
-	let position = 0;
-	props.message.content.split(' ').forEach((words) => {
-		message[position] = { type: 'text', content: words };
-		position += words.length + 1;
-	});
 
-	// replace emotes in message
-	for (const id in emotesUsed) {
-		for (const positions of emotesUsed[id]) {
-			message[positions[0]] = {
-				type: 'emote',
-				id,
-				name: (
-					message[positions[0]] as { type: 'text'; content: string }
-				).content,
-			};
+// split message into individual words with the key of their starting position in the message
+let position = 0;
+props.message.content.split(' ').forEach((words) => {
+	message[position] = { type: 'text', content: words };
+	position += words.length + 1;
+});
+
+// replace Twitch emotes in message (these take priority)
+for (const id in emotesUsed) {
+	for (const positions of emotesUsed[id]) {
+		message[positions[0]] = {
+			type: 'emote',
+			id,
+			name: (
+				message[positions[0]] as { type: 'text'; content: string }
+			).content,
+			source: 'twitch',
+		};
+	}
+}
+
+// replace 7TV emotes in message (only if not already replaced by Twitch emote)
+if (emotes7TVMap.size > 0) {
+	for (const position in message) {
+		const word = message[position];
+		if (word.type === 'text') {
+			const emote7TV = emotes7TVMap.get(word.content);
+			if (emote7TV) {
+				message[position] = {
+					type: 'emote',
+					id: emote7TV.id,
+					name: emote7TV.name,
+					source: '7tv',
+				};
+			}
 		}
 	}
+}
+
+// if no emotes were found, simplify the message structure
+if (
+	Object.values(message).every(
+		(word) => word.type === 'text'
+	)
+) {
+	message = { '0': { type: 'text', content: props.message.content } };
 }
 
 // get URLs in message
@@ -128,7 +161,7 @@ if (Object.keys(emotesUsed).length === 0) {
 
 				<!-- Emote -->
 				<span v-else-if="word.type == 'emote'">
-					<Emote :id="word.id" :name="word.name" class="inline" />
+					<Emote :id="word.id" :name="word.name" :source="word.source" class="inline" />
 				</span>
 
 				<!-- if not the last word, add a space -->

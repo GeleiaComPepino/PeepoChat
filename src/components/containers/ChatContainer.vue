@@ -58,6 +58,7 @@ let twitchChatClient: ChatClient,
 	onDisconnect: Listener,
 	onMessage: Listener;
 let badges: Ref<IChatBadgeList> = ref(store.globalBadges);
+let emotes7TV: Ref<I7TVEmoteSet | null> = ref(null);
 
 // events
 const onChatScroll = () => {
@@ -129,6 +130,24 @@ onMounted(() => {
 			...(response.data as IChatBadgeList),
 		};
 	});
+
+	// get 7TV emotes (async)
+	$fetch<{ data: I7TVUserResponse }>('/api/v1/twitch/emotes-7tv', {
+		params: {
+			id: props.user.id,
+		},
+	})
+		.then((response) => {
+			// store 7TV emotes
+			const data = response.data as I7TVUserResponse;
+			if (data?.emote_set) {
+				emotes7TV.value = data.emote_set;
+			}
+		})
+		.catch((error) => {
+			// 7TV emotes are optional, so we just log the error
+			console.warn('Failed to fetch 7TV emotes:', error);
+		});
 });
 </script>
 
@@ -150,6 +169,7 @@ onMounted(() => {
 				:message="message"
 				:index="index"
 				:badgeList="badges"
+				:emotes7TV="emotes7TV"
 			/>
 		</template>
 	</div>

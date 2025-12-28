@@ -1,21 +1,53 @@
 <script setup lang="ts">
+// get state
+import useStore from '~/store';
+const store = useStore();
+
 // localization
 const localize = useI18n().t;
 
 // properties
 const props = defineProps<{
-	channel: {
-		name: string;
-		avatarURL: string;
-		live: boolean;
-		platform: {
-			twitch?: string;
-		};
-	};
+	channel: IChannel;
 }>();
 
+// methods
+const handleRemove = () => {
+	const index = store.channels.findIndex(
+		(c) => c.name.toLowerCase() === props.channel.name.toLowerCase()
+	);
+	if (index !== -1) {
+		store.channels.splice(index, 1);
+	}
+};
+
+const handlePin = () => {
+	const channel = store.channels.find(
+		(c) => c.name.toLowerCase() === props.channel.name.toLowerCase()
+	);
+	if (channel) {
+		channel.pinned = !channel.pinned;
+	}
+};
+
+const handleChannelClick = () => {
+	const route = useRoute();
+	const newPath = '/channel/twitch/' + props.channel.platform.twitch;
+	// Force full page reload if navigating to different channel
+	if (route.path !== newPath) {
+		window.location.href = newPath;
+	}
+};
+
+// computed for pin label
+const pinLabel = computed(() => {
+	return props.channel.pinned
+		? localize('sidebar.channel.dropdown.unpin')
+		: localize('sidebar.channel.dropdown.pin');
+});
+
 // dropdown contents
-const dropdownContentAnon = [
+const dropdownContentAnon = computed(() => [
 	[
 		{
 			label: localize('sidebar.channel.dropdown.visit_stream'),
@@ -27,17 +59,19 @@ const dropdownContentAnon = [
 	],
 	[
 		{
-			label: localize('sidebar.channel.dropdown.pin'),
+			label: pinLabel.value,
 			icon: 'i-ic-round-push-pin',
+			click: handlePin,
 		},
 	],
 	[
 		{
 			label: localize('sidebar.channel.dropdown.remove'),
 			icon: 'i-ic-baseline-remove-circle',
+			click: handleRemove,
 		},
 	],
-];
+]);
 
 // state
 const dropdownOpen = ref(false);
@@ -66,7 +100,7 @@ const dropdownOpen = ref(false);
 		<Button
 			:label="props.channel.name"
 			variant="hidden"
-			:to="'/channel/twitch/' + props.channel.platform.twitch"
+			@click="handleChannelClick"
 			@click.right="
 				() => {
 					dropdownOpen = true;

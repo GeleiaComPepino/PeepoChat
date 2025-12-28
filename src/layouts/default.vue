@@ -41,6 +41,43 @@ const sidebarToggleButtonStyle = computed(() => {
 		},
 	};
 });
+
+// modal state
+const isAddChannelModalOpen = ref(false);
+
+// add channel
+const handleChannelAdded = (channel: IChannel) => {
+	// check if the channel already exists
+	const channelExists = store.channels.some(
+		(c) => c.name.toLowerCase() === channel.name.toLowerCase()
+	);
+
+	if (!channelExists) {
+		// add to store
+		store.channels.push(channel);
+	}
+};
+
+// migrate old channels that do not have pinned ownership
+onMounted(() => {
+	store.channels.forEach((channel) => {
+		if (typeof channel.pinned === 'undefined') {
+			channel.pinned = false;
+		}
+	});
+});
+
+// order channels: pinned first, then the others
+const sortedChannels = computed(() => {
+	return [...store.channels].sort((a, b) => {
+		// Pinned channels first
+		if (a.pinned && !b.pinned) return -1;
+		if (!a.pinned && b.pinned) return 1;
+
+		// Keep original order for same pinned status
+		return 0;
+	});
+});
 </script>
 
 <template>
@@ -52,18 +89,12 @@ const sidebarToggleButtonStyle = computed(() => {
 			<template #channels>
 				<ul>
 					<!-- Channel Buttons -->
-					<li class="flex justify-center mb-3">
-						<ChannelButton
-							:channel="{
-								name: 'pokelawls',
-								avatarURL:
-									'https://cdn.7tv.app/pp/611ea25d3990c04e921506f7/743b9aca64cc46b49b16bb2c0a1c5f44',
-								live: false,
-								platform: {
-									twitch: 'pokelawls',
-								},
-							}"
-						/>
+					<li
+						v-for="channel in sortedChannels"
+						:key="channel.name"
+						class="flex justify-center mb-3"
+					>
+						<ChannelButton :channel="channel" />
 					</li>
 
 					<!-- Add Channel Button -->
@@ -84,7 +115,7 @@ const sidebarToggleButtonStyle = computed(() => {
 								},
 							}"
 							size="lg"
-							to="/"
+							@click="isAddChannelModalOpen = true"
 						/>
 					</li>
 				</ul>
@@ -135,5 +166,11 @@ const sidebarToggleButtonStyle = computed(() => {
 		<div class="static h-full w-fit grow scrollbar-hidden">
 			<slot />
 		</div>
+
+		<!-- Add Channel Modal -->
+		<AddChannelModal
+			v-model:open="isAddChannelModalOpen"
+			@channel-added="handleChannelAdded"
+		/>
 	</div>
 </template>

@@ -2,7 +2,7 @@
 // add events when the component mounts.
 onMounted(async () => {
 	// run client-side only
-	if (process.browser) {
+	if (process.client) {
 		window.addEventListener('contextmenu', preventContextMenu);
 	}
 });
@@ -10,7 +10,7 @@ onMounted(async () => {
 // remove events when un-mounting the component.
 onUnmounted(() => {
 	// run client-side only
-	if (process.browser) {
+	if (process.client) {
 		window.removeEventListener('contextmenu', preventContextMenu);
 	}
 });

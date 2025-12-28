@@ -22,6 +22,7 @@ export default defineStore(
 		const version: Ref<string> = ref(useRuntimeConfig().public.version);
 		const settings: Ref<ISettings> = ref(defaults.defaultSettings);
 		const globalBadges: Ref<IChatBadgeList> = ref({});
+		const channels: Ref<IChannel[]> = ref(defaults.defaultChannels);
 
 		// get global badge data (async)
 		useFetch('/api/v1/twitch/badges').then((response) => {
@@ -35,6 +36,7 @@ export default defineStore(
 			version,
 			settings,
 			globalBadges,
+			channels,
 		};
 	},
 

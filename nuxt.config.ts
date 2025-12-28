@@ -26,8 +26,8 @@ export default defineNuxtConfig({
 	},
 
 	runtimeConfig: {
-		twitchAppClientId: '',
-		twitchAppClientSecret: '',
+		twitchAppClientId: process.env.NUXT_TWITCH_APP_CLIENT_ID || '',
+		twitchAppClientSecret: process.env.NUXT_TWITCH_APP_CLIENT_SECRET || '',
 		public: {
 			version,
 			userAgent: `${name}/${version} (${author.email})`,

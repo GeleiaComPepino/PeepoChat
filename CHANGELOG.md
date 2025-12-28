@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.3] - 2025-12-28
+
+### Added
+-   7TV emote support integrated with Twitch chat
+-   Backend endpoint to fetch 7TV emotes by Twitch user
+-   Emote source handling (`twitch` | `7tv`) in chat rendering
+
+### Changed
+-   Chat parser now supports multiple emote providers
+-   Twitch emotes take priority over 7TV on name conflicts
+
 ## [0.0.2] - 2025-12-27
 
 ### Added

@@ -51,7 +51,7 @@ if (props.emotes7TV?.emotes) {
 let message: {
 	[key: string]:
 		| { type: 'text'; content: string }
-		| { type: 'emote'; id: string; name: string; source: 'twitch' | '7tv' };
+		| { type: 'emote'; id: string; name: string; source: 'twitch' | '7tv'; isZeroWidth?: boolean; zeroWidthEmotes?: Array<{ id: string; name: string; source: 'twitch' | '7tv' }> };
 } = {};
 
 // split message into individual words with the key of their starting position in the message
@@ -82,12 +82,48 @@ if (emotes7TVMap.size > 0) {
 		if (word.type === 'text') {
 			const emote7TV = emotes7TVMap.get(word.content);
 			if (emote7TV) {
+				// Check if emote is 0-width (flag value 256)
+				// 7TV uses bitwise flags, so we check if bit 8 (256) is set
+				const flags = emote7TV.data?.flags ?? emote7TV.flags;
+				const isZeroWidth = flags === 256 || (flags & 256) === 256;
 				message[position] = {
 					type: 'emote',
 					id: emote7TV.id,
 					name: emote7TV.name,
 					source: '7tv',
+					isZeroWidth: isZeroWidth,
 				};
+			}
+		}
+	}
+}
+
+// group 0-width emotes with their previous emote
+const messagePositions = Object.keys(message).map(Number).sort((a, b) => a - b);
+for (let i = 0; i < messagePositions.length; i++) {
+	const currentPos = messagePositions[i];
+	const currentWord = message[currentPos];
+	
+	// if current word is a 0-width emote, find the previous emote and attach it
+	if (currentWord.type === 'emote' && currentWord.isZeroWidth) {
+		// look backwards for the previous emote
+		for (let j = i - 1; j >= 0; j--) {
+			const prevPos = messagePositions[j];
+			const prevWord = message[prevPos];
+			
+			if (prevWord.type === 'emote' && !prevWord.isZeroWidth) {
+				// attach this 0-width emote to the previous emote
+				if (!prevWord.zeroWidthEmotes) {
+					prevWord.zeroWidthEmotes = [];
+				}
+				prevWord.zeroWidthEmotes.push({
+					id: currentWord.id,
+					name: currentWord.name,
+					source: currentWord.source,
+				});
+				// mark this position to be skipped in rendering
+				delete message[currentPos];
+				break;
 			}
 		}
 	}
@@ -160,8 +196,19 @@ if (
 				</span>
 
 				<!-- Emote -->
-				<span v-else-if="word.type == 'emote'">
+				<span v-else-if="word.type == 'emote'" class="inline-flex relative align-middle" style="overflow: visible;">
 					<Emote :id="word.id" :name="word.name" :source="word.source" class="inline" />
+					<!-- 0-width emotes positioned on top -->
+					<template v-if="word.zeroWidthEmotes && word.zeroWidthEmotes.length > 0">
+						<Emote
+							v-for="(zwEmote, zwIndex) in word.zeroWidthEmotes"
+							:key="`zw-${zwIndex}`"
+							:id="zwEmote.id"
+							:name="zwEmote.name"
+							:source="zwEmote.source"
+							:isZeroWidth="true"
+						/>
+					</template>
 				</span>
 
 				<!-- if not the last word, add a space -->

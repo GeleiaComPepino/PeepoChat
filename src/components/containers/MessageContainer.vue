@@ -196,10 +196,17 @@ if (
 				</span>
 
 				<!-- Emote -->
-				<span v-else-if="word.type == 'emote'" class="inline-flex relative align-middle" style="overflow: visible;">
-					<Emote :id="word.id" :name="word.name" :source="word.source" class="inline" />
-					<!-- 0-width emotes positioned on top -->
+				<span 
+					v-else-if="word.type == 'emote'" 
+					:class="[
+						'inline-flex relative align-middle',
+						word.zeroWidthEmotes && word.zeroWidthEmotes.length > 0 ? 'items-center justify-center' : ''
+					]"
+					:style="word.zeroWidthEmotes && word.zeroWidthEmotes.length > 0 ? 'overflow: visible; min-height: 2rem;' : 'overflow: visible;'"
+				>
+					<!-- If there are 0-width emotes, render them first to define container size -->
 					<template v-if="word.zeroWidthEmotes && word.zeroWidthEmotes.length > 0">
+						<!-- 0-width emotes define the width -->
 						<Emote
 							v-for="(zwEmote, zwIndex) in word.zeroWidthEmotes"
 							:key="`zw-${zwIndex}`"
@@ -207,6 +214,24 @@ if (
 							:name="zwEmote.name"
 							:source="zwEmote.source"
 							:isZeroWidth="true"
+						/>
+						<!-- Normal emote positioned absolutely inside 0-width container -->
+						<Emote 
+							:id="word.id" 
+							:name="word.name" 
+							:source="word.source" 
+							:hasZeroWidth="true"
+							class="inline" 
+						/>
+					</template>
+					<!-- Normal emote without 0-width -->
+					<template v-else>
+						<Emote 
+							:id="word.id" 
+							:name="word.name" 
+							:source="word.source" 
+							:hasZeroWidth="false"
+							class="inline" 
 						/>
 					</template>
 				</span>

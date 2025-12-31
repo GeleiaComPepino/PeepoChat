@@ -5,6 +5,7 @@ const props = defineProps<{
 	name: string;
 	source?: 'twitch' | '7tv';
 	isZeroWidth?: boolean;
+	hasZeroWidth?: boolean;
 }>();
 
 // get emote URL based on source
@@ -31,17 +32,26 @@ const previewUrl = computed(() => {
 </script>
 
 <template>
-	<!-- For 0-width emotes, render without tooltip wrapper to avoid positioning issues -->
+	<!-- For 0-width emotes, render without tooltip wrapper to define container size -->
 	<template v-if="props.isZeroWidth">
 		<NuxtImg
 			:src="emoteUrl"
-			class="absolute top-1/2 left-1/2 z-20 max-h-8 pointer-events-auto"
+			class="inline max-h-8 z-30 pointer-events-auto relative"
 			:alt="props.name"
-			style="transform: translate(-50%, -50%);"
 		/>
 	</template>
 	
-	<!-- For normal emotes, render with tooltip -->
+	<!-- For normal emotes with 0-width, render without tooltip to avoid wrapper issues -->
+	<template v-else-if="props.hasZeroWidth">
+		<NuxtImg
+			:src="emoteUrl"
+			class="absolute top-1/2 left-1/2 z-10 max-h-8 w-auto"
+			style="transform: translate(-50%, -50%); height: 2rem; width: auto;"
+			:alt="props.name"
+		/>
+	</template>
+	
+	<!-- For normal emotes without 0-width, render with tooltip -->
 	<UTooltip
 		v-else
 		:openDelay="800"

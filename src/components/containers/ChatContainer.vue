@@ -131,23 +131,70 @@ onMounted(() => {
 		};
 	});
 
-	// get 7TV emotes (async)
-	$fetch<{ data: I7TVUserResponse }>('/api/v1/twitch/emotes-7tv', {
-		params: {
-			id: props.user.id,
-		},
-	})
-		.then((response) => {
-			// store 7TV emotes
-			const data = response.data as I7TVUserResponse;
-			if (data?.emote_set) {
-				emotes7TV.value = data.emote_set;
-			}
-		})
-		.catch((error) => {
-			// 7TV emotes are optional, so we just log the error
-			console.warn('Failed to fetch 7TV emotes:', error);
-		});
+	// get 7TV emotes (global and user) (async)
+	const mergeEmotes = (globalEmotes: I7TVEmoteSet | null, userEmoteSet: I7TVEmoteSet | null) => {
+		if (!globalEmotes && !userEmoteSet) return;
+		
+		// if only one is available, use it directly
+		if (!globalEmotes && userEmoteSet) {
+			emotes7TV.value = userEmoteSet;
+			return;
+		}
+		if (globalEmotes && !userEmoteSet) {
+			emotes7TV.value = globalEmotes;
+			return;
+		}
+		
+		// merge both: create a map to avoid duplicates (user emotes override global ones)
+		const emoteMap = new Map<string, I7TVEmote>();
+		
+		// add global emotes first
+		if (globalEmotes?.emotes) {
+			globalEmotes.emotes.forEach(emote => {
+				emoteMap.set(emote.name, emote);
+			});
+		}
+		
+		// add/override with user emotes
+		if (userEmoteSet?.emotes) {
+			userEmoteSet.emotes.forEach(emote => {
+				emoteMap.set(emote.name, emote);
+			});
+		}
+		
+		// create merged emote set
+		emotes7TV.value = {
+			id: userEmoteSet?.id || globalEmotes?.id || '',
+			name: userEmoteSet?.name || globalEmotes?.name || 'Merged Emotes',
+			flags: userEmoteSet?.flags || globalEmotes?.flags || 0,
+			tags: [...(userEmoteSet?.tags || []), ...(globalEmotes?.tags || [])],
+			immutable: userEmoteSet?.immutable || globalEmotes?.immutable || false,
+			privileged: userEmoteSet?.privileged || globalEmotes?.privileged || false,
+			emotes: Array.from(emoteMap.values()),
+			emote_count: emoteMap.size,
+			capacity: userEmoteSet?.capacity || globalEmotes?.capacity || 0,
+			owner: userEmoteSet?.owner || globalEmotes?.owner,
+		};
+	};
+
+	// fetch both in parallel
+	Promise.allSettled([
+		$fetch<{ data: I7TVEmoteSet }>('/api/v1/twitch/emotes-7tv-global').catch((error) => {
+			console.warn('Failed to fetch 7TV global emotes:', error);
+			return null;
+		}),
+		$fetch<{ data: I7TVUserResponse }>('/api/v1/twitch/emotes-7tv', {
+			params: { id: props.user.id },
+		}).catch((error) => {
+			console.warn('Failed to fetch 7TV user emotes:', error);
+			return null;
+		}),
+	]).then(([globalResult, userResult]) => {
+		const globalEmotes = globalResult.status === 'fulfilled' && globalResult.value ? globalResult.value.data : null;
+		const userEmoteSet = userResult.status === 'fulfilled' && userResult.value ? userResult.value.data?.emote_set || null : null;
+		
+		mergeEmotes(globalEmotes, userEmoteSet);
+	});
 });
 </script>
 

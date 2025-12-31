@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.4] - 2025-12-31
+
+### Added
+- 7TV global emotes support; Fetches and merges global emotes with user emotes.
+
+### Fixed
+- 0-width emote positioning - 0-width emotes now define container size, normal emotes adjust to fit inside
+
 ## [0.0.3] - 2025-12-28
 
 ### Added

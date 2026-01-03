@@ -36,21 +36,21 @@ const previewUrl = computed(() => {
 	<template v-if="props.isZeroWidth">
 		<NuxtImg
 			:src="emoteUrl"
-			class="inline max-h-8 z-30 pointer-events-auto relative"
+			class="inline max-h-8 emote-overlay-layer pointer-events-auto relative"
 			:alt="props.name"
 		/>
 	</template>
-	
+
 	<!-- For normal emotes with 0-width, render without tooltip to avoid wrapper issues -->
 	<template v-else-if="props.hasZeroWidth">
 		<NuxtImg
 			:src="emoteUrl"
-			class="absolute top-1/2 left-1/2 z-10 max-h-8 w-auto"
-			style="transform: translate(-50%, -50%); height: 2rem; width: auto;"
+			class="absolute top-1/2 left-1/2 emote-layer max-h-8 w-auto"
+			style="transform: translate(-50%, -50%); height: 2rem; width: auto"
 			:alt="props.name"
 		/>
 	</template>
-	
+
 	<!-- For normal emotes without 0-width, render with tooltip -->
 	<UTooltip
 		v-else
@@ -63,20 +63,14 @@ const previewUrl = computed(() => {
 		}"
 	>
 		<!-- Emote -->
-		<NuxtImg
-			:src="emoteUrl"
-			class="inline max-h-8"
-			:alt="props.name"
-		/>
+		<NuxtImg :src="emoteUrl" class="inline max-h-8" :alt="props.name" />
 
 		<!-- Description Tooltip -->
 		<template #text>
 			<div
 				class="flex flex-col items-center justify-center text-center gap-y-2 p-2"
 			>
-				<NuxtImg 
-					:src="previewUrl" 
-				/>
+				<NuxtImg :src="previewUrl" />
 				<span class="text-balance text-xs">{{ props.name }}</span>
 			</div>
 		</template>

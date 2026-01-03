@@ -51,7 +51,18 @@ if (props.emotes7TV?.emotes) {
 let message: {
 	[key: string]:
 		| { type: 'text'; content: string }
-		| { type: 'emote'; id: string; name: string; source: 'twitch' | '7tv'; isZeroWidth?: boolean; zeroWidthEmotes?: Array<{ id: string; name: string; source: 'twitch' | '7tv' }> };
+		| {
+				type: 'emote';
+				id: string;
+				name: string;
+				source: 'twitch' | '7tv';
+				isZeroWidth?: boolean;
+				zeroWidthEmotes?: Array<{
+					id: string;
+					name: string;
+					source: 'twitch' | '7tv';
+				}>;
+		  };
 } = {};
 
 // split message into individual words with the key of their starting position in the message
@@ -67,9 +78,8 @@ for (const id in emotesUsed) {
 		message[positions[0]] = {
 			type: 'emote',
 			id,
-			name: (
-				message[positions[0]] as { type: 'text'; content: string }
-			).content,
+			name: (message[positions[0]] as { type: 'text'; content: string })
+				.content,
 			source: 'twitch',
 		};
 	}
@@ -99,18 +109,20 @@ if (emotes7TVMap.size > 0) {
 }
 
 // group 0-width emotes with their previous emote
-const messagePositions = Object.keys(message).map(Number).sort((a, b) => a - b);
+const messagePositions = Object.keys(message)
+	.map(Number)
+	.sort((a, b) => a - b);
 for (let i = 0; i < messagePositions.length; i++) {
 	const currentPos = messagePositions[i];
 	const currentWord = message[currentPos];
-	
+
 	// if current word is a 0-width emote, find the previous emote and attach it
 	if (currentWord.type === 'emote' && currentWord.isZeroWidth) {
 		// look backwards for the previous emote
 		for (let j = i - 1; j >= 0; j--) {
 			const prevPos = messagePositions[j];
 			const prevWord = message[prevPos];
-			
+
 			if (prevWord.type === 'emote' && !prevWord.isZeroWidth) {
 				// attach this 0-width emote to the previous emote
 				if (!prevWord.zeroWidthEmotes) {
@@ -130,11 +142,7 @@ for (let i = 0; i < messagePositions.length; i++) {
 }
 
 // if no emotes were found, simplify the message structure
-if (
-	Object.values(message).every(
-		(word) => word.type === 'text'
-	)
-) {
+if (Object.values(message).every((word) => word.type === 'text')) {
 	message = { '0': { type: 'text', content: props.message.content } };
 }
 
@@ -196,16 +204,27 @@ if (
 				</span>
 
 				<!-- Emote -->
-				<span 
-					v-else-if="word.type == 'emote'" 
+				<span
+					v-else-if="word.type == 'emote'"
 					:class="[
 						'inline-flex relative align-middle',
-						word.zeroWidthEmotes && word.zeroWidthEmotes.length > 0 ? 'items-center justify-center' : ''
+						word.zeroWidthEmotes && word.zeroWidthEmotes.length > 0
+							? 'items-center justify-center'
+							: '',
 					]"
-					:style="word.zeroWidthEmotes && word.zeroWidthEmotes.length > 0 ? 'overflow: visible; min-height: 2rem;' : 'overflow: visible;'"
+					:style="
+						word.zeroWidthEmotes && word.zeroWidthEmotes.length > 0
+							? 'overflow: visible; min-height: 2rem;'
+							: 'overflow: visible;'
+					"
 				>
 					<!-- If there are 0-width emotes, render them first to define container size -->
-					<template v-if="word.zeroWidthEmotes && word.zeroWidthEmotes.length > 0">
+					<template
+						v-if="
+							word.zeroWidthEmotes &&
+							word.zeroWidthEmotes.length > 0
+						"
+					>
 						<!-- 0-width emotes define the width -->
 						<Emote
 							v-for="(zwEmote, zwIndex) in word.zeroWidthEmotes"
@@ -216,22 +235,22 @@ if (
 							:isZeroWidth="true"
 						/>
 						<!-- Normal emote positioned absolutely inside 0-width container -->
-						<Emote 
-							:id="word.id" 
-							:name="word.name" 
-							:source="word.source" 
+						<Emote
+							:id="word.id"
+							:name="word.name"
+							:source="word.source"
 							:hasZeroWidth="true"
-							class="inline" 
+							class="inline"
 						/>
 					</template>
 					<!-- Normal emote without 0-width -->
 					<template v-else>
-						<Emote 
-							:id="word.id" 
-							:name="word.name" 
-							:source="word.source" 
+						<Emote
+							:id="word.id"
+							:name="word.name"
+							:source="word.source"
 							:hasZeroWidth="false"
-							class="inline" 
+							class="inline"
 						/>
 					</template>
 				</span>

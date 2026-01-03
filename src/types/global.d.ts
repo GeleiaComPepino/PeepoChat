@@ -142,4 +142,42 @@ declare global {
 			avatar_url: string;
 		};
 	}
+
+	// Message Components
+	type EmoteSource = 'twitch' | '7tv';
+
+	interface IEmoteStack {
+		id: string;
+		name: string;
+		source: EmoteSource;
+		isBase: boolean;
+		isZeroWidth: boolean;
+	}
+
+	interface IMessageTextNode {
+		type: 'text';
+		content: string;
+	}
+
+	interface IMessageEmoteNode {
+		type: 'emote';
+		id: string;
+		name: string;
+		source: EmoteSource;
+		isZeroWidth?: boolean;
+		zeroWidthEmotes?: Array<{
+			id: string;
+			name: string;
+			source: EmoteSource;
+		}>;
+	}
+
+	type IMessageNode = IMessageTextNode | IMessageEmoteNode;
+
+	interface IMessageEntry {
+		position: number;
+		node: IMessageNode;
+		stack?: IEmoteStack[];
+		anchorIndex?: number;
+	}
 }

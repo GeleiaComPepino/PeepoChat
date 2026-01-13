@@ -8,11 +8,20 @@ const anchor = computed(() => props.stack[props.anchorIndex]);
 const overlays = computed(() =>
 	props.stack.filter((_, index) => index !== props.anchorIndex)
 );
+
+// helper function to get emote URL
+const getEmoteUrl = (emoteId: string, emoteSource: 'twitch' | '7tv', size: '1x' | '4x' = '1x') => {
+	if (emoteSource === '7tv') {
+		return `https://cdn.7tv.app/emote/${emoteId}/${size === '4x' ? '4x.webp' : '1x.webp'}`;
+	} else {
+		return `https://static-cdn.jtvnw.net/emoticons/v2/${emoteId}/default/dark/${size === '4x' ? '4.0' : '1.0'}`;
+	}
+};
 </script>
 
 <template>
 	<!-- Wrapper participates in text flow, but with no extra line-height slack -->
-	<span class="relative inline-flex items-end leading-none">
+	<span class="relative inline-block align-bottom leading-none">
 		<!-- Anchor: rendered normally to define container width -->
 		<NuxtImg
 			v-if="anchor"

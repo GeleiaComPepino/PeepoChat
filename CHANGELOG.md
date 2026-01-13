@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.5] - 2026-01-13
+
+### Added
+- 7TV global emotes support; Fetches and merges global emotes with user emotes
+- Tooltip support for stacked 0-width emotes; Shows main emote and all 0-width emotes in tooltip
+- Support for multiple stacked 0-width emotes with proper layering (z-index stacking)
+
+### Fixed
+- 0-width emote positioning - 0-width emotes now define container size, normal emotes adjust to fit inside
+- 0-width emote layering - 0-width emotes now properly stack above the main emote in layers (first 0-width on top of main, second on top of first, etc.)
+- Message text wrapping - Messages with emotes now properly wrap when window width is narrow
+
 ## [0.0.4] - 2025-12-31
 
 ### Added

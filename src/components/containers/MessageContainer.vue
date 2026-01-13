@@ -39,46 +39,68 @@ if (emotesRaw && emotesRaw !== '')
 			});
 	});
 
-// create 7TV emote map (name -> emote data)
+// 7TV emote Name map (name -> emote data)
 const emotes7TVMap: Map<string, I7TVEmote> = new Map();
+
+// 7TV emote ID map (id -> emote data)
+const emotes7TVById: Map<string, I7TVEmote> = new Map();
+
 if (props.emotes7TV?.emotes) {
 	props.emotes7TV.emotes.forEach((emote) => {
 		emotes7TVMap.set(emote.name, emote);
+		emotes7TVById.set(emote.id, emote);
 	});
 }
 
+// approximate visual width of an emote
+const getEmoteVisualWidth = (id: string, source: EmoteSource): number => {
+	if (source !== '7tv') {
+		// twitch emotes are all squares and don't have wide versions
+		return 1;
+	}
+
+	const emote = emotes7TVById.get(id);
+	if (!emote) return 1;
+
+	// use the widest available file as our width reference
+	const files = emote.data?.host.files ?? [];
+	if (files.length === 0) return 1;
+
+	return files.reduce((max, file) => {
+		return file.width > max ? file.width : max;
+	}, 0);
+};
+
 // parse message
-let message: {
-	[key: string]:
-		| { type: 'text'; content: string }
-		| { type: 'emote'; id: string; name: string; source: 'twitch' | '7tv'; isZeroWidth?: boolean; zeroWidthEmotes?: Array<{ id: string; name: string; source: 'twitch' | '7tv' }> };
-} = {};
+let message: { [key: string]: IMessageNode } = {};
 
 // split message into individual words with the key of their starting position in the message
 let position = 0;
 props.message.content.split(' ').forEach((words) => {
-	message[position] = { type: 'text', content: words };
+	const node: IMessageTextNode = { type: 'text', content: words };
+	message[position] = node;
 	position += words.length + 1;
 });
 
 // replace Twitch emotes in message (these take priority)
 for (const id in emotesUsed) {
 	for (const positions of emotesUsed[id]) {
-		message[positions[0]] = {
+		const original = message[positions[0]] as IMessageTextNode | undefined;
+		const name = original?.type === 'text' ? original.content : '';
+		const emoteNode: IMessageEmoteNode = {
 			type: 'emote',
 			id,
-			name: (
-				message[positions[0]] as { type: 'text'; content: string }
-			).content,
+			name,
 			source: 'twitch',
 		};
+		message[positions[0]] = emoteNode;
 	}
 }
 
 // replace 7TV emotes in message (only if not already replaced by Twitch emote)
 if (emotes7TVMap.size > 0) {
-	for (const position in message) {
-		const word = message[position];
+	for (const key in message) {
+		const word = message[key];
 		if (word.type === 'text') {
 			const emote7TV = emotes7TVMap.get(word.content);
 			if (emote7TV) {
@@ -86,23 +108,28 @@ if (emotes7TVMap.size > 0) {
 				// 7TV uses bitwise flags, so we check if bit 8 (256) is set
 				const flags = emote7TV.data?.flags ?? emote7TV.flags;
 				const isZeroWidth = flags === 256 || (flags & 256) === 256;
-				message[position] = {
+				const emoteNode: IMessageEmoteNode = {
 					type: 'emote',
 					id: emote7TV.id,
 					name: emote7TV.name,
 					source: '7tv',
-					isZeroWidth: isZeroWidth,
+					isZeroWidth,
 				};
+				message[key] = emoteNode;
 			}
 		}
 	}
 }
 
-// group 0-width emotes with their previous emote
-const messagePositions = Object.keys(message).map(Number).sort((a, b) => a - b);
+// group 0-width emotes with their previous non-zero-width emote
+const messagePositions = Object.keys(message)
+	.map(Number)
+	.sort((a, b) => a - b);
+
 for (let i = 0; i < messagePositions.length; i++) {
 	const currentPos = messagePositions[i];
 	const currentWord = message[currentPos];
+<<<<<<< HEAD
 	
 	// skip if this position was already deleted
 	if (!currentWord) continue;
@@ -130,19 +157,166 @@ for (let i = 0; i < messagePositions.length; i++) {
 				// mark this position to be skipped in rendering
 				delete message[currentPos];
 				break;
+=======
+
+	// skip if missing or not a zero-width emote
+	if (
+		!currentWord ||
+		currentWord.type !== 'emote' ||
+		!currentWord.isZeroWidth
+	)
+		continue;
+
+	// look backwards for the previous non-zero-width emote
+	for (let j = i - 1; j >= 0; j--) {
+		const prevPos = messagePositions[j];
+		const prevWord = message[prevPos];
+
+		if (!prevWord || prevWord.type !== 'emote') continue;
+
+		if (!prevWord.isZeroWidth) {
+			// attach this 0-width emote to the previous emote
+			if (!prevWord.zeroWidthEmotes) {
+				prevWord.zeroWidthEmotes = [];
+>>>>>>> d03684f0482e656028d039d1b8256d21ae49c812
 			}
+			prevWord.zeroWidthEmotes.push({
+				id: currentWord.id,
+				name: currentWord.name,
+				source: currentWord.source,
+			});
+
+			// mark this position to be skipped in rendering
+			delete message[currentPos];
+			break;
 		}
 	}
 }
 
-// if no emotes were found, simplify the message structure
-if (
-	Object.values(message).every(
-		(word) => word.type === 'text'
-	)
-) {
-	message = { '0': { type: 'text', content: props.message.content } };
+// SECOND PASS: group runs of only-zero-width emotes together
+const sortedPositions = Object.keys(message)
+	.map(Number)
+	.sort((a, b) => a - b);
+
+let runStartIndex = 0;
+
+while (runStartIndex < sortedPositions.length) {
+	const startPos = sortedPositions[runStartIndex];
+	const startWord = message[startPos];
+
+	// only care about zero-width emotes still present
+	if (!startWord || startWord.type !== 'emote' || !startWord.isZeroWidth) {
+		runStartIndex++;
+		continue;
+	}
+
+	// collect a run of consecutive zero-width emotes
+	let runEndIndex = runStartIndex + 1;
+	const runPositions: number[] = [startPos];
+
+	while (runEndIndex < sortedPositions.length) {
+		const pos = sortedPositions[runEndIndex];
+		const word = message[pos];
+
+		if (!word || word.type !== 'emote' || !word.isZeroWidth) break;
+
+		runPositions.push(pos);
+		runEndIndex++;
+	}
+
+	// if we have more than one zero-width in a row, group them
+	if (runPositions.length > 1) {
+		const basePos = runPositions[0];
+		const baseWord = message[basePos];
+
+		if (baseWord && baseWord.type === 'emote') {
+			if (!baseWord.zeroWidthEmotes) {
+				baseWord.zeroWidthEmotes = [];
+			}
+
+			for (let i = 1; i < runPositions.length; i++) {
+				const pos = runPositions[i];
+				const word = message[pos];
+
+				if (word && word.type === 'emote') {
+					baseWord.zeroWidthEmotes.push({
+						id: word.id,
+						name: word.name,
+						source: word.source,
+					});
+					delete message[pos];
+				}
+			}
+		}
+	}
+
+	runStartIndex = runEndIndex;
 }
+
+// if no emotes were found, simplify the message structure
+if (Object.values(message).every((word) => word.type === 'text')) {
+	const single: { [key: string]: IMessageNode } = {
+		'0': { type: 'text', content: props.message.content },
+	};
+	message = single;
+}
+
+// build a stack (base + its zero-widths) for a given emote node
+const buildStackForWord = (word: IMessageEmoteNode): IEmoteStack[] => {
+	const base: IEmoteStack = {
+		id: word.id,
+		name: word.name,
+		source: word.source,
+		isBase: true,
+		isZeroWidth: !!word.isZeroWidth,
+	};
+
+	const zeros: IEmoteStack[] = (word.zeroWidthEmotes ?? []).map((zw) => ({
+		id: zw.id,
+		name: zw.name,
+		source: zw.source,
+		isBase: false,
+		isZeroWidth: true,
+	}));
+
+	// order: base first, then zero-widths in the order they were attached
+	return [base, ...zeros];
+};
+
+// given a stack, choose the index of the widest emote (by metadata)
+const getAnchorIndexForStack = (stack: IEmoteStack[]): number => {
+	if (stack.length === 0) return 0;
+
+	let anchorIndex = 0;
+	let anchorWidth = getEmoteVisualWidth(stack[0].id, stack[0].source);
+
+	for (let i = 1; i < stack.length; i++) {
+		const candidate = stack[i];
+		const w = getEmoteVisualWidth(candidate.id, candidate.source);
+		if (w > anchorWidth) {
+			anchorWidth = w;
+			anchorIndex = i;
+		}
+	}
+
+	return anchorIndex;
+};
+
+const messageEntries = computed<IMessageEntry[]>(() => {
+	const positions = Object.keys(message)
+		.map(Number)
+		.sort((a, b) => a - b);
+
+	return positions.map((pos) => {
+		const node = message[pos];
+		if (node.type === 'emote') {
+			const stack = buildStackForWord(node);
+			const anchorIndex = getAnchorIndexForStack(stack);
+			return { position: pos, node, stack, anchorIndex };
+		}
+		return { position: pos, node };
+	});
+});
 
 // get URLs in message
 // let urls: string[] = [];
@@ -161,22 +335,25 @@ if (
 			// first message: highlight background
 			props.message.meta.tags.get('first-msg') == '1'
 				? 'bg-yellow-50 dark:bg-stone-700'
-				: // alternate colors for each row/message
+				: // alternate background color of messages
 				index % 2 === 0
 				? 'bg-secondary-color'
-				: '', // empty/transparent (inherit background)
-			'pl-5',
+				: // empty/transparent (inherit background)
+				  '',
+			'pl-5 py-1',
 		]"
 	>
+		<!-- Debug: Click chat message to print message object in browser log -->
 		<a href="#" @click.prevent="console.log(props.message.meta.tags)">
 			<!-- Badges -->
 			<ChatBadge
 				v-if="badges"
 				v-for="(version, id) in badges"
+				:key="id"
 				:title="props.badgeList[id][version].title"
 				:url="props.badgeList[id][version].url"
 				:preview-url="props.badgeList[id][version].previewUrl"
-				class="inline"
+				class="inline-block align-bottom pb-1"
 			/>
 
 			<!-- Name -->
@@ -192,6 +369,7 @@ if (
 			</span>
 
 			<!-- Message Content -->
+<<<<<<< HEAD
 			<template
 				v-for="(word, position, index) in message"
 				class="h-full text-center"
@@ -281,32 +459,65 @@ if (
 						class="inline" 
 					/>
 				</span>
+=======
+			<span class="pl-1">
+				<template
+					v-for="(entry, index) in messageEntries"
+					:key="entry.position"
+				>
+					<!-- Leading space before every entry except the first -->
+					<span v-if="index > 0"> </span>
 
-				<!-- if not the last word, add a space -->
-				<span v-if="index + 1 < Object.keys(message).length">
-					{{ ' ' }}
-				</span>
+					<!-- Text -->
+					<span v-if="entry.node.type === 'text'">
+						{{ entry.node.content }}
+					</span>
 
-				<!-- Link -->
-				<!-- <p class="inline">
-					{{ props.message.content }}
-					<template v-for="url of urls">
-						<NuxtLink :href="url" target="_blank">
-							<div
-								class="w-[200px] h-[20px] bg-blue-600 bg-opacity-35 rounded flex items-center overflow-hidden pl-3"
-							>
-								<p class="text-nowrap whitespace-nowrap">
-									<Icon
-										name="material-symbols:link-rounded"
-										class="w-[20px] h-[20px] text-white"
-									/>
-									{{ url }}
-								</p>
-							</div>
-						</NuxtLink>
-					</template>
-				</p> -->
-			</template>
+					<!-- Emote (normal or stacked) -->
+					<span
+						v-else
+						class="inline-block relative align-bottom leading-none"
+						style="overflow: visible"
+					>
+						<EmoteStack
+							v-if="
+								entry.stack &&
+								entry.stack.length > 1 &&
+								entry.anchorIndex !== undefined
+							"
+							:stack="entry.stack"
+							:anchor-index="entry.anchorIndex"
+						/>
+						<Emote
+							v-else
+							:id="(entry.node as IMessageEmoteNode).id"
+							:name="(entry.node as IMessageEmoteNode).name"
+							:source="(entry.node as IMessageEmoteNode).source"
+						/>
+					</span>
+>>>>>>> d03684f0482e656028d039d1b8256d21ae49c812
+
+					<!-- Link -->
+					<!-- <p class="inline">
+						{{ props.message.content }}
+						<template v-for="url of urls">
+							<NuxtLink :href="url" target="_blank">
+								<div
+									class="w-[200px] h-[20px] bg-blue-600 bg-opacity-35 rounded flex items-center overflow-hidden pl-3"
+								>
+									<p class="text-nowrap whitespace-nowrap">
+										<Icon
+											name="material-symbols:link-rounded"
+											class="w-[20px] h-[20px] text-white"
+										/>
+										{{ url }}
+									</p>
+								</div>
+							</NuxtLink>
+						</template>
+					</p> -->
+				</template>
+			</span>
 		</a>
 	</div>
 </template>

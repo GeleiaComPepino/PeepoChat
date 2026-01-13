@@ -6,6 +6,8 @@ const props = defineProps<{
 	source?: 'twitch' | '7tv';
 	isZeroWidth?: boolean;
 	hasZeroWidth?: boolean;
+	zeroWidthEmotes?: Array<{ id: string; name: string; source: 'twitch' | '7tv' }>;
+	zeroWidthIndex?: number; // index of this 0-width emote in the stack
 }>();
 
 // get emote URL based on source
@@ -32,20 +34,31 @@ const previewUrl = computed(() => {
 </script>
 
 <template>
-	<!-- For 0-width emotes, render without tooltip wrapper to define container size -->
+	<!-- For 0-width emotes, render without tooltip wrapper -->
 	<template v-if="props.isZeroWidth">
+		<!-- First 0-width defines container width (inline) -->
 		<NuxtImg
+			v-if="(props.zeroWidthIndex || 0) === 0"
 			:src="emoteUrl"
-			class="inline max-h-8 z-30 pointer-events-auto relative"
+			class="inline max-h-8 pointer-events-none relative"
+			:style="`z-index: ${20 + (props.zeroWidthIndex || 0) * 10};`"
+			:alt="props.name"
+		/>
+		<!-- Subsequent 0-widths are absolutely positioned and stacked -->
+		<NuxtImg
+			v-else
+			:src="emoteUrl"
+			class="absolute top-1/2 left-1/2 max-h-8 pointer-events-none"
+			:style="`transform: translate(-50%, -50%); z-index: ${20 + (props.zeroWidthIndex || 0) * 10};`"
 			:alt="props.name"
 		/>
 	</template>
 	
-	<!-- For normal emotes with 0-width, render without tooltip to avoid wrapper issues -->
+	<!-- For normal emotes with 0-width, render without tooltip (tooltip is handled by parent) -->
 	<template v-else-if="props.hasZeroWidth">
 		<NuxtImg
 			:src="emoteUrl"
-			class="absolute top-1/2 left-1/2 z-10 max-h-8 w-auto"
+			class="absolute top-1/2 left-1/2 z-10 max-h-8 w-auto pointer-events-auto"
 			style="transform: translate(-50%, -50%); height: 2rem; width: auto;"
 			:alt="props.name"
 		/>

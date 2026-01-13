@@ -104,12 +104,18 @@ for (let i = 0; i < messagePositions.length; i++) {
 	const currentPos = messagePositions[i];
 	const currentWord = message[currentPos];
 	
+	// skip if this position was already deleted
+	if (!currentWord) continue;
+	
 	// if current word is a 0-width emote, find the previous emote and attach it
 	if (currentWord.type === 'emote' && currentWord.isZeroWidth) {
 		// look backwards for the previous emote
 		for (let j = i - 1; j >= 0; j--) {
 			const prevPos = messagePositions[j];
 			const prevWord = message[prevPos];
+			
+			// skip if previous word was deleted or doesn't exist
+			if (!prevWord) continue;
 			
 			if (prevWord.type === 'emote' && !prevWord.isZeroWidth) {
 				// attach this 0-width emote to the previous emote
@@ -196,17 +202,32 @@ if (
 				</span>
 
 				<!-- Emote -->
-				<span 
-					v-else-if="word.type == 'emote'" 
-					:class="[
-						'inline-flex relative align-middle',
-						word.zeroWidthEmotes && word.zeroWidthEmotes.length > 0 ? 'items-center justify-center' : ''
-					]"
-					:style="word.zeroWidthEmotes && word.zeroWidthEmotes.length > 0 ? 'overflow: visible; min-height: 2rem;' : 'overflow: visible;'"
+				<UTooltip
+					v-else-if="word.type == 'emote' && word.zeroWidthEmotes && word.zeroWidthEmotes.length > 0"
+					:openDelay="800"
+					:popper="{ placement: 'right' }"
+					:ui="{
+						width: 'w-24',
+						background: 'opacity-100',
+						base: 'h-fit',
+					}"
 				>
-					<!-- If there are 0-width emotes, render them first to define container size -->
-					<template v-if="word.zeroWidthEmotes && word.zeroWidthEmotes.length > 0">
-						<!-- 0-width emotes define the width -->
+					<span 
+						:class="[
+							'inline-flex relative align-middle items-center justify-center pointer-events-auto'
+						]"
+						style="overflow: visible; min-height: 2rem;"
+					>
+						<!-- Normal emote positioned absolutely inside 0-width container (rendered first, z-10, behind) -->
+						<Emote 
+							:id="word.id" 
+							:name="word.name" 
+							:source="word.source" 
+							:hasZeroWidth="true"
+							:zeroWidthEmotes="word.zeroWidthEmotes"
+							class="inline" 
+						/>
+						<!-- 0-width emotes stacked with increasing z-index (rendered after, on top) -->
 						<Emote
 							v-for="(zwEmote, zwIndex) in word.zeroWidthEmotes"
 							:key="`zw-${zwIndex}`"
@@ -214,26 +235,51 @@ if (
 							:name="zwEmote.name"
 							:source="zwEmote.source"
 							:isZeroWidth="true"
+							:zeroWidthIndex="zwIndex"
 						/>
-						<!-- Normal emote positioned absolutely inside 0-width container -->
-						<Emote 
-							:id="word.id" 
-							:name="word.name" 
-							:source="word.source" 
-							:hasZeroWidth="true"
-							class="inline" 
-						/>
+					</span>
+
+					<!-- Description Tooltip with main emote and all 0-width emotes -->
+					<template #text>
+						<div
+							class="flex flex-col items-center justify-center text-center gap-y-2 p-2"
+						>
+							<!-- Main emote -->
+							<NuxtImg 
+								:src="word.source === '7tv' ? `https://cdn.7tv.app/emote/${word.id}/4x.webp` : `https://static-cdn.jtvnw.net/emoticons/v2/${word.id}/default/dark/4.0`" 
+							/>
+							<span class="text-balance text-xs">{{ word.name }}</span>
+							
+							<!-- All 0-width emotes -->
+							<template v-if="word.zeroWidthEmotes && word.zeroWidthEmotes.length > 0">
+								<div class="w-full border-t border-gray-300 dark:border-gray-600 pt-2 mt-1">
+									<template v-for="(zwEmote, index) in word.zeroWidthEmotes" :key="`zw-tooltip-${index}`">
+										<div class="flex flex-col items-center justify-center gap-y-1 mb-2">
+											<NuxtImg 
+												:src="zwEmote.source === '7tv' ? `https://cdn.7tv.app/emote/${zwEmote.id}/4x.webp` : `https://static-cdn.jtvnw.net/emoticons/v2/${zwEmote.id}/default/dark/4.0`" 
+											/>
+											<span class="text-balance text-xs">{{ zwEmote.name }}</span>
+										</div>
+									</template>
+								</div>
+							</template>
+						</div>
 					</template>
-					<!-- Normal emote without 0-width -->
-					<template v-else>
-						<Emote 
-							:id="word.id" 
-							:name="word.name" 
-							:source="word.source" 
-							:hasZeroWidth="false"
-							class="inline" 
-						/>
-					</template>
+				</UTooltip>
+
+				<!-- Normal emote without 0-width -->
+				<span 
+					v-else-if="word.type == 'emote'" 
+					class="inline-flex relative align-middle"
+					style="overflow: visible;"
+				>
+					<Emote 
+						:id="word.id" 
+						:name="word.name" 
+						:source="word.source" 
+						:hasZeroWidth="false"
+						class="inline" 
+					/>
 				</span>
 
 				<!-- if not the last word, add a space -->

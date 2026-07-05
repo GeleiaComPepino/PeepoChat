@@ -178,6 +178,5 @@ declare global {
 		position: number;
 		node: IMessageNode;
 		stack?: IEmoteStack[];
-		anchorIndex?: number;
 	}
 }

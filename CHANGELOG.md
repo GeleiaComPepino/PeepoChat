@@ -7,36 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.0.5] - 2026-01-13
-
 ### Added
-- 7TV global emotes support; Fetches and merges global emotes with user emotes
-- Tooltip support for stacked 0-width emotes; Shows main emote and all 0-width emotes in tooltip
-- Support for multiple stacked 0-width emotes with proper layering (z-index stacking)
 
-### Fixed
-- 0-width emote positioning - 0-width emotes now define container size, normal emotes adjust to fit inside
-- 0-width emote layering - 0-width emotes now properly stack above the main emote in layers (first 0-width on top of main, second on top of first, etc.)
-- Message text wrapping - Messages with emotes now properly wrap when window width is narrow
-
-## [0.0.4] - 2025-12-31
-
-### Added
-- 7TV global emotes support; Fetches and merges global emotes with user emotes.
-
-### Fixed
-- 0-width emote positioning - 0-width emotes now define container size, normal emotes adjust to fit inside
-
-## [0.0.3] - 2025-12-28
-
-### Added
--   7TV emote support integrated with Twitch chat
--   Backend endpoint to fetch 7TV emotes by Twitch user
--   Emote source handling (`twitch` | `7tv`) in chat rendering
+-   7TV emote support in Twitch chat, covering both global and per-channel emote sets (user emotes override globals on name conflicts)
+-   Backend endpoints to fetch 7TV global emotes and per-Twitch-user emotes
+-   Zero-width (overlay) emote support, including multiple stacked overlays and a Chatterino-style tooltip that lists every emote in a stack
 
 ### Changed
--   Chat parser now supports multiple emote providers
--   Twitch emotes take priority over 7TV on name conflicts
+
+-   Chat parser now supports multiple emote providers, with Twitch emotes taking priority over 7TV on name conflicts
+
+### Fixed
+
+-   Only one popover is visible at a time — opening a sidebar menu closes any other menu, showing a tooltip closes open menus, and menus close when the mouse leaves them
+-   Word spacing and line wrapping no longer break in messages that contain emotes
+-   Emotes now load directly from their CDN instead of through the image proxy, fixing missing/delayed emote images and console errors during heavy chat
 
 ## [0.0.2] - 2025-12-27
 

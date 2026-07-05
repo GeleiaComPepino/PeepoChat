@@ -42,34 +42,11 @@ if (emotesRaw && emotesRaw !== '')
 // 7TV emote Name map (name -> emote data)
 const emotes7TVMap: Map<string, I7TVEmote> = new Map();
 
-// 7TV emote ID map (id -> emote data)
-const emotes7TVById: Map<string, I7TVEmote> = new Map();
-
 if (props.emotes7TV?.emotes) {
 	props.emotes7TV.emotes.forEach((emote) => {
 		emotes7TVMap.set(emote.name, emote);
-		emotes7TVById.set(emote.id, emote);
 	});
 }
-
-// approximate visual width of an emote
-const getEmoteVisualWidth = (id: string, source: EmoteSource): number => {
-	if (source !== '7tv') {
-		// twitch emotes are all squares and don't have wide versions
-		return 1;
-	}
-
-	const emote = emotes7TVById.get(id);
-	if (!emote) return 1;
-
-	// use the widest available file as our width reference
-	const files = emote.data?.host.files ?? [];
-	if (files.length === 0) return 1;
-
-	return files.reduce((max, file) => {
-		return file.width > max ? file.width : max;
-	}, 0);
-};
 
 // parse message
 let message: { [key: string]: IMessageNode } = {};
@@ -104,10 +81,9 @@ if (emotes7TVMap.size > 0) {
 		if (word.type === 'text') {
 			const emote7TV = emotes7TVMap.get(word.content);
 			if (emote7TV) {
-				// Check if emote is 0-width (flag value 256)
-				// 7TV uses bitwise flags, so we check if bit 8 (256) is set
-				const flags = emote7TV.data?.flags ?? emote7TV.flags;
-				const isZeroWidth = flags === 256 || (flags & 256) === 256;
+				// 7TV marks zero-width emotes with bit 256 on the emote data flags
+				const flags = emote7TV.data?.flags ?? emote7TV.flags ?? 0;
+				const isZeroWidth = (flags & 256) === 256;
 				const emoteNode: IMessageEmoteNode = {
 					type: 'emote',
 					id: emote7TV.id,
@@ -253,25 +229,6 @@ const buildStackForWord = (word: IMessageEmoteNode): IEmoteStack[] => {
 	return [base, ...zeros];
 };
 
-// given a stack, choose the index of the widest emote (by metadata)
-const getAnchorIndexForStack = (stack: IEmoteStack[]): number => {
-	if (stack.length === 0) return 0;
-
-	let anchorIndex = 0;
-	let anchorWidth = getEmoteVisualWidth(stack[0].id, stack[0].source);
-
-	for (let i = 1; i < stack.length; i++) {
-		const candidate = stack[i];
-		const w = getEmoteVisualWidth(candidate.id, candidate.source);
-		if (w > anchorWidth) {
-			anchorWidth = w;
-			anchorIndex = i;
-		}
-	}
-
-	return anchorIndex;
-};
-
 const messageEntries = computed<IMessageEntry[]>(() => {
 	const positions = Object.keys(message)
 		.map(Number)
@@ -281,8 +238,7 @@ const messageEntries = computed<IMessageEntry[]>(() => {
 		const node = message[pos];
 		if (node.type === 'emote') {
 			const stack = buildStackForWord(node);
-			const anchorIndex = getAnchorIndexForStack(stack);
-			return { position: pos, node, stack, anchorIndex };
+			return { position: pos, node, stack };
 		}
 		return { position: pos, node };
 	});
@@ -344,8 +300,11 @@ const messageEntries = computed<IMessageEntry[]>(() => {
 					v-for="(entry, index) in messageEntries"
 					:key="entry.position"
 				>
-					<!-- Leading space before every entry except the first -->
-					<span v-if="index > 0"> </span>
+					<!-- Leading space before every entry except the first.
+					     Uses {{ ' ' }} (not a literal space) so Vue's whitespace
+					     condensing can't drop it — this keeps word spacing intact and
+					     preserves wrap points when a message contains emotes. -->
+					<span v-if="index > 0">{{ ' ' }}</span>
 
 					<!-- Text -->
 					<span v-if="entry.node.type === 'text'" class="inline">
@@ -359,13 +318,8 @@ const messageEntries = computed<IMessageEntry[]>(() => {
 						style="overflow: visible"
 					>
 						<EmoteStack
-							v-if="
-								entry.stack &&
-								entry.stack.length > 1 &&
-								entry.anchorIndex !== undefined
-							"
+							v-if="entry.stack && entry.stack.length > 1"
 							:stack="entry.stack"
-							:anchor-index="entry.anchorIndex"
 						/>
 						<Emote
 							v-else
